@@ -356,7 +356,7 @@
               </div>
               <div class="teaser-mini-card">
                 <div class="teaser-mini-label">Monthly Grocery Spend</div>
-                <div class="teaser-mini-num">$342.00</div>
+                <div class="teaser-mini-num">₹2,720.00</div>
                 <div style="font-size: 0.72rem; color: var(--muted); margin-top: 4px;">4 sample receipts logged</div>
               </div>
               <div class="teaser-mini-card">
@@ -819,7 +819,7 @@
             </div>
             <div class="kpi-panel">
               <div class="kpi-lbl">Current Month Spend</div>
-              <div class="kpi-val" id="db-kpi-spend">$0.00</div>
+              <div class="kpi-val" id="db-kpi-spend">₹0.00</div>
               <div class="kpi-sub" id="db-kpi-spend-meta">Logged transactions</div>
             </div>
           </div>
@@ -972,7 +972,7 @@
               <h2 style="font-size: 1.45rem;">Grocery &amp; Household Expenses</h2>
               <p style="font-size: 0.85rem; color: var(--muted);">Understand grocery spending, review purchase history, and manage household budgets.</p>
             </div>
-            <span class="badge badge-ok" id="exp-total-pill" style="font-size: 0.88rem; padding: 6px 14px;">Total Spend: $0.00</span>
+            <span class="badge badge-ok" id="exp-total-pill" style="font-size: 0.88rem; padding: 6px 14px;">Total Spend: ₹0.00</span>
           </div>
 
           <!-- Add Expense Form -->
@@ -994,8 +994,8 @@
                 </select>
               </div>
               <div>
-                <label style="font-size: 0.74rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;" for="exp-in-amt">Amount ($) *</label>
-                <input type="number" class="input-txt" id="exp-in-amt" step="0.01" min="0.50" max="5000" placeholder="45.50" required>
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;" for="exp-in-amt">Amount (₹) *</label>
+                <input type="number" class="input-txt" id="exp-in-amt" step="1" min="1" max="500000" placeholder="450.00" required>
               </div>
               <div>
                 <label style="font-size: 0.74rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;" for="exp-in-date">Date *</label>
@@ -1157,7 +1157,12 @@
     (function () {
       'use strict';
 
-      const STORAGE_KEY = 'liviq_platform_v2';
+      const STORAGE_KEY = 'liviq_platform_v3';
+
+      function formatCurrency(amount) {
+        const num = Number(amount) || 0;
+        return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
 
       function offsetDate(days) {
         const d = new Date();
@@ -1237,10 +1242,10 @@
             { id: 'shp-4', name: 'Dish Soap Refill', category: 'Household', qty: '1 bottle', purchased: true }
           ],
           expenses: [
-            { id: 'exp-1', title: 'Greenleaf Farmers Market', category: 'Produce', amount: 64.50, date: offsetDate(-6) },
-            { id: 'exp-2', title: 'Neighborhood Co-op Groceries', category: 'Pantry Staples', amount: 118.20, date: offsetDate(-4) },
-            { id: 'exp-3', title: 'Local Dairy & Bakery Run', category: 'Dairy & Eggs', amount: 46.80, date: offsetDate(-2) },
-            { id: 'exp-4', title: 'Eco Household Essentials', category: 'Household', amount: 34.90, date: offsetDate(-1) }
+            { id: 'exp-1', title: 'Greenleaf Farmers Market', category: 'Produce', amount: 640.00, date: offsetDate(-6) },
+            { id: 'exp-2', title: 'Neighborhood Co-op Groceries', category: 'Pantry Staples', amount: 1250.00, date: offsetDate(-4) },
+            { id: 'exp-3', title: 'Local Dairy & Bakery Run', category: 'Dairy & Eggs', amount: 480.00, date: offsetDate(-2) },
+            { id: 'exp-4', title: 'Eco Household Essentials', category: 'Household', amount: 350.00, date: offsetDate(-1) }
           ],
           dismissedInsights: []
         };
@@ -1387,7 +1392,7 @@
         document.getElementById('db-kpi-total-items').textContent = String(total);
         document.getElementById('db-kpi-low-stock').textContent = String(lowStockCount);
         document.getElementById('db-kpi-expiring').textContent = String(expiringCount);
-        document.getElementById('db-kpi-spend').textContent = '$' + totalSpend.toFixed(2);
+        document.getElementById('db-kpi-spend').textContent = formatCurrency(totalSpend);
         document.getElementById('db-kpi-spend-meta').textContent = state.expenses.length + ' receipts logged';
 
         // Teaser on landing page
@@ -1690,7 +1695,7 @@
         tbody.textContent = '';
 
         const total = state.expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-        document.getElementById('exp-total-pill').textContent = 'Total Spend: $' + total.toFixed(2);
+        document.getElementById('exp-total-pill').textContent = 'Total Spend: ' + formatCurrency(total);
         document.getElementById('exp-count-badge').textContent = state.expenses.length + ' Transactions';
 
         // Category Spend Bars
@@ -1702,7 +1707,7 @@
           const pct = total > 0 ? Math.round((sum / total) * 100) : 0;
           const wrap = document.createElement('div');
           wrap.innerHTML = `
-            <div class="bar-row"><span>${c}</span><span>$${sum.toFixed(2)} (${pct}%)</span></div>
+            <div class="bar-row"><span>${c}</span><span>${formatCurrency(sum)} (${pct}%)</span></div>
             <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%;"></div></div>
           `;
           catBars.appendChild(wrap);
@@ -1712,11 +1717,11 @@
         const chartBox = document.getElementById('db-expense-chart');
         chartBox.textContent = '';
         const months = [
-          { label: 'May', val: 310 },
-          { label: 'Jun', val: 295 },
-          { label: 'Jul', val: 340 },
-          { label: 'Aug', val: 280 },
-          { label: 'Sep', val: 325 },
+          { label: 'May', val: 2850 },
+          { label: 'Jun', val: 3100 },
+          { label: 'Jul', val: 2950 },
+          { label: 'Aug', val: 3400 },
+          { label: 'Sep', val: 3200 },
           { label: 'Current', val: Math.round(total), active: true }
         ];
         const maxVal = Math.max(...months.map(m => m.val), 100);
@@ -1732,7 +1737,7 @@
           const val = document.createElement('span');
           val.style.fontSize = '0.72rem';
           val.style.fontWeight = '700';
-          val.textContent = '$' + m.val;
+          val.textContent = '₹' + m.val.toLocaleString('en-IN');
 
           const bar = document.createElement('div');
           bar.style.width = '100%';
@@ -1763,7 +1768,7 @@
             <td style="font-weight: 600;">${escapeHTML(exp.title)}</td>
             <td><span class="badge badge-neutral">${escapeHTML(exp.category)}</span></td>
             <td>${escapeHTML(exp.date)}</td>
-            <td style="font-weight: 700;">$${Number(exp.amount).toFixed(2)}</td>
+            <td style="font-weight: 700;">${formatCurrency(exp.amount)}</td>
             <td style="text-align: right;">
               <button type="button" class="btn btn-ghost btn-sm" style="color: var(--red);" data-del-exp="${exp.id}">Delete</button>
             </td>
@@ -1925,7 +1930,7 @@
           {
             id: 'ins-budget',
             title: 'Review this month’s grocery spending.',
-            desc: `Current logged expenses total $${totalSpend.toFixed(2)} across ${state.expenses.length} receipts.`,
+            desc: `Current logged expenses total ${formatCurrency(totalSpend)} across ${state.expenses.length} receipts.`,
             type: 'ok'
           }
         ];
@@ -2117,7 +2122,7 @@
         amtIn.value = '';
         saveState();
         renderAll();
-        showToast(`Logged expense "${title}" ($${amt.toFixed(2)}).`);
+        showToast(`Logged expense "${title}" (${formatCurrency(amt)}).`);
       });
 
       // Restore Insights
